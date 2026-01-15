@@ -1,68 +1,64 @@
-import { useState } from 'react'
-import './index.css'
+import { useState } from 'react';
+import './index.css';
 
 function App() {
-  const [todos, setTodos] = useState([])
-  const [input, setInput] = useState('')
-  const [editingId, setEditingId] = useState(null)
-  const [editText, setEditText] = useState('')
+  const [todos, setTodos] = useState([]);
+  const [input, setInput] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState('');
 
   const addTodo = () => {
     if (input.trim() !== '') {
-      setTodos([...todos, { id: Date.now(), text: input, completed: false }])
-      setInput('')
+      setTodos([...todos, { id: Date.now(), text: input, completed: false }]);
+      setInput('');
     }
-  }
+  };
 
   const toggleTodo = (id) => {
     if (editingId !== id) {
-      setTodos(todos.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      ))
+      setTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)));
     }
-  }
+  };
 
   const deleteTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id))
+    setTodos(todos.filter((todo) => todo.id !== id));
     if (editingId === id) {
-      setEditingId(null)
-      setEditText('')
+      setEditingId(null);
+      setEditText('');
     }
-  }
+  };
 
   const startEdit = (id, text) => {
-    setEditingId(id)
-    setEditText(text)
-  }
+    setEditingId(id);
+    setEditText(text);
+  };
 
   const saveEdit = (id) => {
     if (editText.trim() !== '') {
-      setTodos(todos.map(todo =>
-        todo.id === id ? { ...todo, text: editText.trim() } : todo
-      ))
+      setTodos(todos.map((todo) => (todo.id === id ? { ...todo, text: editText.trim() } : todo)));
     }
-    setEditingId(null)
-    setEditText('')
-  }
+    setEditingId(null);
+    setEditText('');
+  };
 
   const cancelEdit = () => {
-    setEditingId(null)
-    setEditText('')
-  }
+    setEditingId(null);
+    setEditText('');
+  };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      addTodo()
+      addTodo();
     }
-  }
+  };
 
   const handleEditKeyPress = (e, id) => {
     if (e.key === 'Enter') {
-      saveEdit(id)
+      saveEdit(id);
     } else if (e.key === 'Escape') {
-      cancelEdit()
+      cancelEdit();
     }
-  }
+  };
 
   return (
     <div className="app">
@@ -85,7 +81,7 @@ function App() {
           {todos.length === 0 ? (
             <li className="empty-state">No todos yet. Add one above!</li>
           ) : (
-            todos.map(todo => (
+            todos.map((todo) => (
               <li key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
                 {editingId === todo.id ? (
                   <>
@@ -99,39 +95,24 @@ function App() {
                       autoFocus
                     />
                     <div className="edit-buttons">
-                      <button
-                        onClick={() => saveEdit(todo.id)}
-                        className="save-button"
-                      >
+                      <button onClick={() => saveEdit(todo.id)} className="save-button">
                         Save
                       </button>
-                      <button
-                        onClick={cancelEdit}
-                        className="cancel-button"
-                      >
+                      <button onClick={cancelEdit} className="cancel-button">
                         Cancel
                       </button>
                     </div>
                   </>
                 ) : (
                   <>
-                    <span
-                      className="todo-text"
-                      onClick={() => toggleTodo(todo.id)}
-                    >
+                    <span className="todo-text" onClick={() => toggleTodo(todo.id)}>
                       {todo.text}
                     </span>
                     <div className="action-buttons">
-                      <button
-                        onClick={() => startEdit(todo.id, todo.text)}
-                        className="edit-button"
-                      >
+                      <button onClick={() => startEdit(todo.id, todo.text)} className="edit-button">
                         Edit
                       </button>
-                      <button
-                        onClick={() => deleteTodo(todo.id)}
-                        className="delete-button"
-                      >
+                      <button onClick={() => deleteTodo(todo.id)} className="delete-button">
                         Delete
                       </button>
                     </div>
@@ -143,7 +124,7 @@ function App() {
         </ul>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
