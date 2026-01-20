@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App from '../App'
+import App from '../components/TodoApp'
 
 describe('App Component', () => {
   test('renders the todo list with an empty state message initially', () => {
