@@ -6,6 +6,7 @@ function App() {
   const [input, setInput] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
+  const [filter, setFilter] = useState('all'); // 'all', 'active', 'completed'
 
   const addTodo = () => {
     if (input.trim() !== '') {
@@ -60,6 +61,12 @@ function App() {
     }
   };
 
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === 'active') return !todo.completed;
+    if (filter === 'completed') return todo.completed;
+    return true; // 'all'
+  });
+
   return (
     <div className="app">
       <div className="container">
@@ -77,11 +84,30 @@ function App() {
             Add
           </button>
         </div>
+        <div className="filter-container">
+          <button onClick={() => setFilter('all')} className={`filter-button ${filter === 'all' ? 'active' : ''}`}>
+            All
+          </button>
+          <button onClick={() => setFilter('active')} className={`filter-button ${filter === 'active' ? 'active' : ''}`}>
+            Active
+          </button>
+          <button onClick={() => setFilter('completed')} className={`filter-button ${filter === 'completed' ? 'active' : ''}`}>
+            Completed
+          </button>
+        </div>
         <ul className="todo-list">
-          {todos.length === 0 ? (
-            <li className="empty-state">No todos yet. Add one above!</li>
+          {filteredTodos.length === 0 ? (
+            <li className="empty-state">
+              {todos.length === 0
+                ? 'No todos yet. Add one above!'
+                : filter === 'active'
+                ? 'No active todos!'
+                : filter === 'completed'
+                ? 'No completed todos!'
+                : 'No todos yet. Add one above!'}
+            </li>
           ) : (
-            todos.map((todo) => (
+            filteredTodos.map((todo) => (
               <li key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
                 {editingId === todo.id ? (
                   <>
