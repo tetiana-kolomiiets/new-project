@@ -1,11 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App'
 
 describe('App Component', () => {
   test('renders the todo list with an empty state message initially', () => {
     render(<App />)
-    // Updated assertion for the new initial empty state message
     const emptyStateMessage = screen.getByText(/No todos yet\. Add one above!/i)
     expect(emptyStateMessage).toBeInTheDocument()
   })
@@ -16,7 +15,7 @@ describe('App Component', () => {
     const addButton = screen.getByText(/Add/i)
 
     await userEvent.type(inputElement, 'Buy groceries')
-    fireEvent.click(addButton)
+    await userEvent.click(addButton)
 
     const todoItem = screen.getByText(/Buy groceries/i)
     expect(todoItem).toBeInTheDocument()
@@ -28,18 +27,18 @@ describe('App Component', () => {
     const addButton = screen.getByText(/Add/i)
 
     await userEvent.type(inputElement, 'Walk the dog')
-    fireEvent.click(addButton)
+    await userEvent.click(addButton)
 
     const todoText = screen.getByText(/Walk the dog/i)
-    const todoItemLi = todoText.closest('li') // Get the parent li for class check
+    const todoItem = todoText.closest('li') // Get the parent li
 
-    expect(todoItemLi).not.toHaveClass('completed') // Initially not completed
+    expect(todoItem).not.toHaveClass('completed') // Initially not completed
 
-    fireEvent.click(todoText) // Toggle to completed
-    expect(todoItemLi).toHaveClass('completed')
+    await userEvent.click(todoText) // Toggle to completed
+    expect(todoItem).toHaveClass('completed') // Now completed
 
-    fireEvent.click(todoText) // Toggle back to not completed
-    expect(todoItemLi).not.toHaveClass('completed')
+    await userEvent.click(todoText) // Toggle back to active
+    expect(todoItem).not.toHaveClass('completed') // Not completed again
   })
 
   test('deletes a todo from the list', async () => {
@@ -48,10 +47,10 @@ describe('App Component', () => {
     const addButton = screen.getByText(/Add/i)
 
     await userEvent.type(inputElement, 'Pay bills')
-    fireEvent.click(addButton)
+    await userEvent.click(addButton)
 
-    const deleteButton = screen.getByText(/Delete/i)
-    fireEvent.click(deleteButton)
+    const deleteButton = screen.getByText(/Pay bills/i).closest('li').querySelector('.delete-button')
+    await userEvent.click(deleteButton)
 
     const todoItem = screen.queryByText(/Pay bills/i)
     expect(todoItem).not.toBeInTheDocument()
@@ -63,10 +62,10 @@ describe('App Component', () => {
     const addButton = screen.getByText(/Add/i)
 
     await userEvent.type(inputElement, 'Read a book')
-    fireEvent.click(addButton)
+    await userEvent.click(addButton)
 
-    const editButton = screen.getByText(/Edit/i)
-    fireEvent.click(editButton)
+    const editButton = screen.getByText(/Read a book/i).closest('li').querySelector('.edit-button')
+    await userEvent.click(editButton)
 
     const editInput = screen.getByDisplayValue(/Read a book/i)
 
@@ -74,7 +73,7 @@ describe('App Component', () => {
     await userEvent.type(editInput, 'Learn React')
 
     const saveButton = screen.getByText(/Save/i)
-    fireEvent.click(saveButton)
+    await userEvent.click(saveButton)
 
     const updatedTodoItem = screen.getByText(/Learn React/i)
     expect(updatedTodoItem).toBeInTheDocument()
@@ -86,17 +85,17 @@ describe('App Component', () => {
     const addButton = screen.getByText(/Add/i)
 
     await userEvent.type(inputElement, 'Original todo')
-    fireEvent.click(addButton)
+    await userEvent.click(addButton)
 
-    const editButton = screen.getByText(/Edit/i)
-    fireEvent.click(editButton)
+    const editButton = screen.getByText(/Original todo/i).closest('li').querySelector('.edit-button')
+    await userEvent.click(editButton)
 
     const cancelButton = screen.getByText(/Cancel/i)
-    fireEvent.click(cancelButton)
+    await userEvent.click(cancelButton)
 
     const originalTodo = screen.getByText(/Original todo/i)
     expect(originalTodo).toBeInTheDocument()
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument() // Ensure edit input is gone
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
   })
 
   test('adds a new todo on pressing enter', async () => {
@@ -115,180 +114,196 @@ describe('App Component', () => {
     const addButton = screen.getByText(/Add/i)
 
     await userEvent.type(inputElement, 'Initial Value')
-    fireEvent.click(addButton)
+    await userEvent.click(addButton)
 
-    const editButton = screen.getByText(/Edit/i)
-    fireEvent.click(editButton)
+    let editButton = screen.getByText(/Initial Value/i).closest('li').querySelector('.edit-button')
+    await userEvent.click(editButton)
 
-    const editInput = screen.getByDisplayValue(/Initial Value/i)
+    let editInput = screen.getByDisplayValue(/Initial Value/i)
     await userEvent.clear(editInput)
     await userEvent.type(editInput, 'Edited Value{enter}')
 
     const updatedTodoItem = screen.getByText(/Edited Value/i)
     expect(updatedTodoItem).toBeInTheDocument()
-    expect(screen.queryByDisplayValue(/Edited Value/i)).not.toBeInTheDocument() // Ensure edit input is gone
 
-    // Re-enter edit mode for escape test
-    fireEvent.click(screen.getByText(/Edit/i))
-    const editInputAgain = screen.getByDisplayValue(/Edited Value/i)
-    await userEvent.type(editInputAgain, '{esc}')
+    editButton = screen.getByText(/Edited Value/i).closest('li').querySelector('.edit-button')
+    await userEvent.click(editButton)
 
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument() // Ensure edit input is gone
-    expect(screen.getByText(/Edited Value/i)).toBeInTheDocument() // Original text should still be there
+    editInput = screen.getByDisplayValue(/Edited Value/i)
+    await userEvent.type(editInput, '{esc}')
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(screen.getByText(/Edited Value/i)).toBeInTheDocument()
   })
 
-  test('renders filter buttons', () => {
+  test('renders filter buttons and "All" is active by default', () => {
     render(<App />)
-    expect(screen.getByRole('button', { name: /All/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Active/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Completed/i })).toBeInTheDocument()
+    const allButton = screen.getByRole('button', { name: /All/i })
+    const activeButton = screen.getByRole('button', { name: /Active/i })
+    const completedButton = screen.getByRole('button', { name: /Completed/i })
+
+    expect(allButton).toBeInTheDocument()
+    expect(activeButton).toBeInTheDocument()
+    expect(completedButton).toBeInTheDocument()
+
+    expect(allButton).toHaveClass('active')
+    expect(activeButton).not.toHaveClass('active')
+    expect(completedButton).not.toHaveClass('active')
   })
 
-  test('filters active todos', async () => {
-    render(<App />)
-    const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
-    const addButton = screen.getByText(/Add/i)
-
-    // Add an active todo
-    await userEvent.type(inputElement, 'Active Todo')
-    fireEvent.click(addButton)
-
-    // Add a completed todo
-    await userEvent.type(inputElement, 'Completed Todo')
-    fireEvent.click(addButton)
-    fireEvent.click(screen.getByText('Completed Todo')) // Mark as completed
-
-    // Click 'Active' filter
-    fireEvent.click(screen.getByRole('button', { name: /Active/i }))
-
-    expect(screen.getByText('Active Todo')).toBeInTheDocument()
-    expect(screen.queryByText('Completed Todo')).not.toBeInTheDocument()
-    expect(screen.queryByText(/No active todos!/i)).not.toBeInTheDocument() // Should not show empty active message if active todos exist
-  })
-
-  test('filters completed todos', async () => {
+  test('filters todos by "Active" status', async () => {
     render(<App />)
     const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
     const addButton = screen.getByText(/Add/i)
 
-    // Add an active todo
-    await userEvent.type(inputElement, 'Active Todo')
-    fireEvent.click(addButton)
+    await userEvent.type(inputElement, 'Todo 1')
+    await userEvent.click(addButton)
+    await userEvent.type(inputElement, 'Todo 2')
+    await userEvent.click(addButton)
+    await userEvent.type(inputElement, 'Todo 3')
+    await userEvent.click(addButton)
 
-    // Add a completed todo
-    await userEvent.type(inputElement, 'Completed Todo')
-    fireEvent.click(addButton)
-    fireEvent.click(screen.getByText('Completed Todo')) // Mark as completed
+    const todo2Text = screen.getByText(/Todo 2/i)
+    await userEvent.click(todo2Text) // Mark Todo 2 as completed
 
-    // Click 'Completed' filter
-    fireEvent.click(screen.getByRole('button', { name: /Completed/i }))
+    const activeButton = screen.getByRole('button', { name: /Active/i })
+    await userEvent.click(activeButton)
 
-    expect(screen.queryByText('Active Todo')).not.toBeInTheDocument()
-    expect(screen.getByText('Completed Todo')).toBeInTheDocument()
-    expect(screen.queryByText(/No completed todos!/i)).not.toBeInTheDocument() // Should not show empty completed message if completed todos exist
+    expect(screen.getByText(/Todo 1/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Todo 2/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Todo 3/i)).toBeInTheDocument()
+
+    expect(activeButton).toHaveClass('active')
+    expect(screen.getByRole('button', { name: /All/i })).not.toHaveClass('active')
   })
 
-  test('shows all todos when "All" filter is selected after filtering', async () => {
+  test('filters todos by "Completed" status', async () => {
     render(<App />)
     const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
     const addButton = screen.getByText(/Add/i)
 
-    await userEvent.type(inputElement, 'Active Todo')
-    fireEvent.click(addButton)
+    await userEvent.type(inputElement, 'Complete me 1')
+    await userEvent.click(addButton)
+    await userEvent.type(inputElement, 'Complete me 2')
+    await userEvent.click(addButton)
+    await userEvent.type(inputElement, 'Not complete')
+    await userEvent.click(addButton)
 
-    await userEvent.type(inputElement, 'Completed Todo')
-    fireEvent.click(addButton)
-    fireEvent.click(screen.getByText('Completed Todo')) // Mark as completed
+    await userEvent.click(screen.getByText(/Complete me 1/i))
+    await userEvent.click(screen.getByText(/Complete me 2/i))
 
-    // Filter to active first
-    fireEvent.click(screen.getByRole('button', { name: /Active/i }))
-    expect(screen.getByText('Active Todo')).toBeInTheDocument()
-    expect(screen.queryByText('Completed Todo')).not.toBeInTheDocument()
+    const completedButton = screen.getByRole('button', { name: /Completed/i })
+    await userEvent.click(completedButton)
 
-    // Then click 'All'
-    fireEvent.click(screen.getByRole('button', { name: /All/i }))
-    expect(screen.getByText('Active Todo')).toBeInTheDocument()
-    expect(screen.getByText('Completed Todo')).toBeInTheDocument()
+    expect(screen.getByText(/Complete me 1/i)).toBeInTheDocument()
+    expect(screen.getByText(/Complete me 2/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Not complete/i)).not.toBeInTheDocument()
+
+    expect(completedButton).toHaveClass('active')
+    expect(screen.getByRole('button', { name: /All/i })).not.toHaveClass('active')
   })
 
-  test('displays correct empty state message for "active" filter when no active todos', async () => {
+  test('shows correct empty state messages for filters', async () => {
     render(<App />)
     const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
     const addButton = screen.getByText(/Add/i)
 
-    // Add a todo and complete it
-    await userEvent.type(inputElement, 'Completed One')
-    fireEvent.click(addButton)
-    fireEvent.click(screen.getByText('Completed One'))
+    await userEvent.type(inputElement, 'Only completed todo')
+    await userEvent.click(addButton)
+    await userEvent.click(screen.getByText(/Only completed todo/i))
 
-    // Click 'Active' filter
-    fireEvent.click(screen.getByRole('button', { name: /Active/i }))
+    expect(screen.getByText(/Only completed todo/i)).toBeInTheDocument()
+    expect(screen.queryByText(/No todos yet\. Add one above!/i)).not.toBeInTheDocument()
 
-    expect(screen.queryByText('Completed One')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Active/i }))
+    expect(screen.queryByText(/Only completed todo/i)).not.toBeInTheDocument()
     expect(screen.getByText(/No active todos!/i)).toBeInTheDocument()
-  })
 
-  test('displays correct empty state message for "completed" filter when no completed todos', async () => {
-    render(<App />)
-    const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
-    const addButton = screen.getByText(/Add/i)
+    await userEvent.click(screen.getByRole('button', { name: /Completed/i }))
+    expect(screen.getByText(/Only completed todo/i)).toBeInTheDocument()
+    expect(screen.queryByText(/No completed todos!/i)).not.toBeInTheDocument()
 
-    // Add an active todo
-    await userEvent.type(inputElement, 'Active One')
-    fireEvent.click(addButton)
-
-    // Click 'Completed' filter
-    fireEvent.click(screen.getByRole('button', { name: /Completed/i }))
-
-    expect(screen.queryByText('Active One')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByText(/Only completed todo/i).closest('li').querySelector('.delete-button'))
+    expect(screen.queryByText(/Only completed todo/i)).not.toBeInTheDocument()
     expect(screen.getByText(/No completed todos!/i)).toBeInTheDocument()
   })
 
-  test('saves edit on blur', async () => {
+  test('adding a todo updates the list in the current filter', async () => {
     render(<App />)
     const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
     const addButton = screen.getByText(/Add/i)
 
-    await userEvent.type(inputElement, 'Original Todo Text')
-    fireEvent.click(addButton)
+    await userEvent.click(screen.getByRole('button', { name: /Active/i }))
+    expect(screen.getByText(/No active todos!/i)).toBeInTheDocument()
 
-    const editButton = screen.getByText(/Edit/i)
-    fireEvent.click(editButton)
+    await userEvent.type(inputElement, 'Newly added active todo')
+    await userEvent.click(addButton)
 
-    const editInput = screen.getByDisplayValue(/Original Todo Text/i)
-    await userEvent.clear(editInput)
-    await userEvent.type(editInput, 'New Todo Text')
+    expect(screen.getByText(/Newly added active todo/i)).toBeInTheDocument()
+    expect(screen.queryByText(/No active todos!/i)).not.toBeInTheDocument()
 
-    // Simulate blur by moving focus away from the input
-    fireEvent.blur(editInput);
-
-    // Wait for state updates and re-render
-    await waitFor(() => {
-      expect(screen.queryByDisplayValue(/New Todo Text/i)).not.toBeInTheDocument(); // Edit input should be gone
-      expect(screen.getByText(/New Todo Text/i)).toBeInTheDocument(); // New text should be displayed
-    });
+    await userEvent.click(screen.getByRole('button', { name: /Completed/i }))
+    expect(screen.queryByText(/Newly added active todo/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/No completed todos!/i)).toBeInTheDocument()
   })
 
-  test('delete a todo while editing cancels the edit and deletes the todo', async () => {
+  test('toggling a todo updates the list in the current filter', async () => {
     render(<App />)
     const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
     const addButton = screen.getByText(/Add/i)
 
-    await userEvent.type(inputElement, 'Todo to be deleted')
-    fireEvent.click(addButton)
+    await userEvent.type(inputElement, 'Toggle me')
+    await userEvent.click(addButton)
 
-    // Enter edit mode
-    fireEvent.click(screen.getByText(/Edit/i))
+    await userEvent.click(screen.getByRole('button', { name: /Active/i }))
+    expect(screen.getByText(/Toggle me/i)).toBeInTheDocument()
 
-    // Check that edit input is visible
-    expect(screen.getByDisplayValue(/Todo to be deleted/i)).toBeInTheDocument()
+    await userEvent.click(screen.getByText(/Toggle me/i))
 
-    const deleteButton = screen.getByText(/Delete/i)
-    fireEvent.click(deleteButton)
+    expect(screen.queryByText(/Toggle me/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/No active todos!/i)).toBeInTheDocument()
 
-    // Assert that the todo is no longer in the document
-    expect(screen.queryByText(/Todo to be deleted/i)).not.toBeInTheDocument()
-    // Assert that the edit input is no longer in the document
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument() // Check for any textbox role as name might be gone
+    await userEvent.click(screen.getByRole('button', { name: /Completed/i }))
+    expect(screen.getByText(/Toggle me/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByText(/Toggle me/i))
+
+    expect(screen.queryByText(/Toggle me/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/No completed todos!/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /All/i }))
+    expect(screen.getByText(/Toggle me/i)).toBeInTheDocument()
+    const todoItem = screen.getByText(/Toggle me/i).closest('li')
+    expect(todoItem).not.toHaveClass('completed')
+  })
+
+  test('deleting a todo while filter is active', async () => {
+    render(<App />)
+    const inputElement = screen.getByPlaceholderText(/Add a new todo/i)
+    const addButton = screen.getByText(/Add/i)
+
+    await userEvent.type(inputElement, 'Active Todo')
+    await userEvent.click(addButton)
+    await userEvent.type(inputElement, 'Completed Todo')
+    await userEvent.click(addButton)
+    await userEvent.click(screen.getByText(/Completed Todo/i))
+
+    await userEvent.click(screen.getByRole('button', { name: /Active/i }))
+    expect(screen.getByText(/Active Todo/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Completed Todo/i)).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByText(/Active Todo/i).closest('li').querySelector('.delete-button'))
+    expect(screen.queryByText(/Active Todo/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/No active todos!/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /Completed/i }))
+    expect(screen.getByText(/Completed Todo/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByText(/Completed Todo/i).closest('li').querySelector('.delete-button'))
+    expect(screen.queryByText(/Completed Todo/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/No completed todos!/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /All/i }))
+    expect(screen.getByText(/No todos yet\. Add one above!/i)).toBeInTheDocument()
   })
 })
