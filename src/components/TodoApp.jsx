@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import TodoInput from './TodoInput';
-import TodoFilters from './TodoFilters';
+import FilterTabs from './FilterTabs';
 import TodoList from './TodoList';
 
 function App() {
@@ -84,7 +84,7 @@ function App() {
       <div className="container">
         <h1>Todo List</h1>
         <TodoInput onAdd={addTodo} />
-        <TodoFilters filter={filter} onChange={setFilter} />
+        <FilterTabs filter={filter} onChange={setFilter} />
         <TodoList
           todos={filteredTodos}
           emptyMessage={emptyMessage}
