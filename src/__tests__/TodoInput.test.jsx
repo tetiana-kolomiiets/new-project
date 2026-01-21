@@ -90,4 +90,18 @@ describe('TodoInput', () => {
     expect(mockOnAdd).not.toHaveBeenCalled();
     expect(inputElement).toHaveValue('   '); // Value remains if not added
   });
+
+  it('does not call onAdd on other key presses', async () => {
+    const mockOnAdd = jest.fn();
+    render(<TodoInput onAdd={mockOnAdd} />);
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+
+    await user.type(inputElement, 'Some text'); // Ensure input has value
+    fireEvent.keyDown(inputElement, { key: 'Escape', code: 'Escape' });
+    fireEvent.keyDown(inputElement, { key: 'Tab', code: 'Tab' });
+    fireEvent.keyDown(inputElement, { key: 'a', code: 'KeyA' });
+
+    expect(mockOnAdd).not.toHaveBeenCalled();
+    expect(inputElement).toHaveValue('Some text'); // Value should remain unchanged
+  });
 });
