@@ -183,4 +183,36 @@ describe('TodoApp', () => {
     expect(screen.getByText('No todos yet. Add one above!')).toBeInTheDocument();
     expect(screen.queryByText('First todo')).not.toBeInTheDocument();
   });
+
+  it('does not toggle completion status when a todo item is being edited', () => {
+    render(<TodoApp />);
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+
+    // 1. Add a todo item
+    fireEvent.change(inputElement, { target: { value: 'Editable task' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+    const todoItem = screen.getByText('Editable task');
+
+    // Ensure it's not completed initially
+    expect(todoItem).not.toHaveClass('completed');
+
+    // 2. Start editing that todo item
+    const editButton = screen.getByRole('button', { name: /edit/i });
+    fireEvent.click(editButton);
+
+    // Verify it's in edit mode (e.g., input field visible)
+    const editInputField = screen.getByDisplayValue('Editable task');
+    expect(editInputField).toBeInTheDocument();
+
+    // 3. Attempt to click (toggle) the todo item
+    fireEvent.click(todoItem); // Click the original text element or its parent
+
+    // 4. Assert that its completion status has *not* changed
+    expect(todoItem).not.toHaveClass('completed');
+
+    // 5. Cancel the edit to clean up
+    fireEvent.keyDown(editInputField, { key: 'Escape', code: 'Escape' });
+    expect(editInputField).not.toBeInTheDocument(); // Verify edit mode exited
+    expect(screen.getByText('Editable task')).toBeInTheDocument(); // Original text should be visible again
+  });
 });

@@ -184,4 +184,21 @@ describe('TodoList', () => {
     // The onEditKeyPress prop expects an event object, id, and text
     expect(mockOnEditKeyPress).toHaveBeenCalledWith(expect.any(Object), '1', currentEditText);
   });
+
+  it('renders the ul element with the "todo-list" class name when todos are present', () => {
+    const todos = [
+      { id: '1', text: 'Walk dog', completed: false },
+    ];
+    render(<TodoList {...defaultProps} todos={todos} />);
+
+    const todoListElement = screen.getByRole('list');
+    expect(todoListElement).toHaveClass('todo-list');
+  });
+
+  it('renders the ul element with the "todo-list" class name when no todos are present', () => {
+    render(<TodoList {...defaultProps} todos={[]} />);
+
+    const todoListElement = screen.getByRole('list');
+    expect(todoListElement).toHaveClass('todo-list');
+  });
 });
