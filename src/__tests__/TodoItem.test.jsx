@@ -165,4 +165,37 @@ describe('TodoItem', () => {
     expect(mockHandlers.onEditKeyPress).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onEditKeyPress).toHaveBeenCalledWith(expect.any(Object), mockTodo.id);
   });
+
+  // Test Case 12: Calls onSaveEdit when Enter key is pressed on input in editing mode (via onEditKeyPress)
+  test('calls onSaveEdit when Enter key is pressed on input in editing mode', () => {
+    // Create a custom mock for onEditKeyPress that simulates a parent's logic
+    // where pressing Enter triggers onSaveEdit. This is done because TodoItem
+    // itself delegates the keydown event entirely to onEditKeyPress.
+    const customOnEditKeyPress = jest.fn((e, todoId) => {
+      if (e.key === 'Enter') {
+        mockHandlers.onSaveEdit(todoId);
+      }
+    });
+
+    render(
+      <TodoItem
+        todo={mockTodo}
+        isEditing={true}
+        editText="edit text"
+        {...mockHandlers} // Spread all default mocks first
+        onEditKeyPress={customOnEditKeyPress} // Then override onEditKeyPress for this test
+      />
+    );
+
+    const inputElement = screen.getByRole('textbox');
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    // Assert that TodoItem called its onEditKeyPress prop with the correct arguments
+    expect(customOnEditKeyPress).toHaveBeenCalledTimes(1);
+    expect(customOnEditKeyPress).toHaveBeenCalledWith(expect.any(Object), mockTodo.id);
+
+    // Assert that our custom onEditKeyPress in turn called onSaveEdit
+    expect(mockHandlers.onSaveEdit).toHaveBeenCalledTimes(1);
+    expect(mockHandlers.onSaveEdit).toHaveBeenCalledWith(mockTodo.id);
+  });
 });
