@@ -24,11 +24,11 @@ function TodoItem({
             autoFocus
           />
           <div className="edit-buttons">
-            <button onClick={() => onSaveEdit(todo.id)} className="save-button">
-              Save
+            <button onClick={() => onSaveEdit(todo.id)} className="save-button" title="Save changes">
+              ✓
             </button>
-            <button onClick={onCancelEdit} className="cancel-button">
-              Cancel
+            <button onClick={onCancelEdit} className="cancel-button" title="Cancel editing">
+              ✕
             </button>
           </div>
         </>
@@ -43,14 +43,16 @@ function TodoItem({
             <button
               onClick={() => onStartEdit(todo.id, todo.text)}
               className="edit-button"
+              title="Edit todo"
             >
-              Edit
+              ✏️
             </button>
             <button
               onClick={() => onDelete(todo.id)}
               className="delete-button"
+              title="Delete todo"
             >
-              Delete
+              🗑️
             </button>
           </div>
         </>

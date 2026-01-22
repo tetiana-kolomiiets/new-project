@@ -200,18 +200,23 @@ h1 {
 }
 
 .delete-button {
-  padding: 6px 12px;
+  padding: 8px 10px;
   background: #ff4757;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .delete-button:hover {
   background: #ee5a6f;
+  transform: scale(1.1);
 }
 
 .delete-button:active {
@@ -224,18 +229,23 @@ h1 {
 }
 
 .edit-button {
-  padding: 6px 12px;
+  padding: 8px 10px;
   background: #667eea;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .edit-button:hover {
   background: #5568d3;
+  transform: scale(1.1);
 }
 
 .edit-button:active {
@@ -258,18 +268,23 @@ h1 {
 }
 
 .save-button {
-  padding: 6px 12px;
+  padding: 8px 10px;
   background: #2ed573;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 18px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .save-button:hover {
   background: #26c965;
+  transform: scale(1.1);
 }
 
 .save-button:active {
@@ -277,18 +292,23 @@ h1 {
 }
 
 .cancel-button {
-  padding: 6px 12px;
+  padding: 8px 10px;
   background: #999;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 18px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cancel-button:hover {
   background: #777;
+  transform: scale(1.1);
 }
 
 .cancel-button:active {
