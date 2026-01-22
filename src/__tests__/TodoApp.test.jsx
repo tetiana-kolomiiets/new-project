@@ -235,6 +235,7 @@ describe('TodoApp', () => {
     });
 
     // Sort by 'priority' (expected to be 'newest' order if all default to medium priority)
+    // This tests the fallback sorting when all priorities are equal.
     fireEvent.change(sortSelect, { target: { value: 'priority' } });
     await waitFor(() => {
       expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Alpha Task', 'Zeta Task']);
