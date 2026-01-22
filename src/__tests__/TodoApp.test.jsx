@@ -24,13 +24,13 @@ describe('TodoApp', () => {
 
     const todoItem = screen.getByText('Walk the dog');
     // Assume TodoItem has 'todo-item' class and 'completed' when completed
-    expect(todoItem).not.toHaveClass('completed');
+    expect(todoItem.closest('.todo-item')).not.toHaveClass('completed');
 
-    fireEvent.click(todoItem); // Toggle completion
-    expect(todoItem).toHaveClass('completed');
+    fireEvent.click(todoItem);
+    expect(todoItem.closest('.todo-item')).toHaveClass('completed');
 
-    fireEvent.click(todoItem); // Toggle back to active
-    expect(todoItem).not.toHaveClass('completed');
+    fireEvent.click(todoItem);
+    expect(todoItem.closest('.todo-item')).not.toHaveClass('completed');
   });
 
   it('deletes a todo item', () => {
@@ -41,9 +41,15 @@ describe('TodoApp', () => {
 
     expect(screen.getByText('Clean room')).toBeInTheDocument();
 
-    // Assuming the delete button for a todo item is labeled 'Delete'
-    const deleteButton = screen.getByRole('button', { name: /delete/i });
-    fireEvent.click(deleteButton);
+    // Assuming the delete button for a todo item is within its container, e.g., a sibling
+    const todoItemContainer = screen.getByText('Clean room').closest('.todo-item');
+    const deleteButton = screen.getByRole('button', { name: /delete/i, hidden: true }); // It might be visually hidden but accessible
+    // If the button is explicitly linked to the todo item, we might need a more specific selector.
+    // For now, assuming it's the only one or that RTL finds the correct one related to the todo
+    // Let's refine this to be specific to the todo item if necessary.
+    // Given the component structure, it's likely a button near the todo text.
+    // We'll click the delete button closest to the 'Clean room' text.
+    fireEvent.click(todoItemContainer.querySelector('[aria-label="Delete todo"]') || deleteButton);
 
     expect(screen.queryByText('Clean room')).not.toBeInTheDocument();
   });
@@ -54,14 +60,13 @@ describe('TodoApp', () => {
     fireEvent.change(inputElement, { target: { value: 'Original text' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
 
-    // Assuming an edit button for a todo item is labeled 'Edit'
-    const editButton = screen.getByRole('button', { name: /edit/i });
+    const todoItem = screen.getByText('Original text');
+    const editButton = todoItem.closest('.todo-item').querySelector('[aria-label="Edit todo"]'); // More specific edit button
     fireEvent.click(editButton);
 
-    // An input field should appear with the original text
     const editInputField = screen.getByDisplayValue('Original text');
     fireEvent.change(editInputField, { target: { value: 'Updated text' } });
-    fireEvent.keyDown(editInputField, { key: 'Enter', code: 'Enter' }); // Save with Enter
+    fireEvent.keyDown(editInputField, { key: 'Enter', code: 'Enter' });
 
     expect(screen.queryByText('Original text')).not.toBeInTheDocument();
     expect(screen.getByText('Updated text')).toBeInTheDocument();
@@ -73,12 +78,13 @@ describe('TodoApp', () => {
     fireEvent.change(inputElement, { target: { value: 'Original text to cancel' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
 
-    const editButton = screen.getByRole('button', { name: /edit/i });
+    const todoItem = screen.getByText('Original text to cancel');
+    const editButton = todoItem.closest('.todo-item').querySelector('[aria-label="Edit todo"]'); // More specific edit button
     fireEvent.click(editButton);
 
     const editInputField = screen.getByDisplayValue('Original text to cancel');
     fireEvent.change(editInputField, { target: { value: 'New text that should not be saved' } });
-    fireEvent.keyDown(editInputField, { key: 'Escape', code: 'Escape' }); // Cancel with Escape
+    fireEvent.keyDown(editInputField, { key: 'Escape', code: 'Escape' });
 
     expect(screen.getByText('Original text to cancel')).toBeInTheDocument();
     expect(screen.queryByText('New text that should not be saved')).not.toBeInTheDocument();
@@ -88,15 +94,13 @@ describe('TodoApp', () => {
     render(<TodoApp />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
-    // Add an active todo
     fireEvent.change(inputElement, { target: { value: 'Active task' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-    // Add a completed todo
+
     fireEvent.change(inputElement, { target: { value: 'Completed task' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-    fireEvent.click(screen.getByText('Completed task')); // Mark as completed
+    fireEvent.click(screen.getByText('Completed task'));
 
-    // Click 'Active' filter button
     const activeFilterButton = screen.getByRole('button', { name: /active/i });
     fireEvent.click(activeFilterButton);
 
@@ -108,15 +112,13 @@ describe('TodoApp', () => {
     render(<TodoApp />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
-    // Add an active todo
     fireEvent.change(inputElement, { target: { value: 'Another active task' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-    // Add a completed todo
+
     fireEvent.change(inputElement, { target: { value: 'Another completed task' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-    fireEvent.click(screen.getByText('Another completed task')); // Mark as completed
+    fireEvent.click(screen.getByText('Another completed task'));
 
-    // Click 'Completed' filter button
     const completedFilterButton = screen.getByRole('button', { name: /completed/i });
     fireEvent.click(completedFilterButton);
 
@@ -128,19 +130,16 @@ describe('TodoApp', () => {
     render(<TodoApp />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
-    // Add an active todo
     fireEvent.change(inputElement, { target: { value: 'Active task for all' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-    // Add a completed todo
+
     fireEvent.change(inputElement, { target: { value: 'Completed task for all' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-    fireEvent.click(screen.getByText('Completed task for all')); // Mark as completed
+    fireEvent.click(screen.getByText('Completed task for all'));
 
-    // Filter to completed first
     fireEvent.click(screen.getByRole('button', { name: /completed/i }));
     expect(screen.queryByText('Active task for all')).not.toBeInTheDocument();
 
-    // Click 'All' filter button
     const allFilterButton = screen.getByRole('button', { name: /all/i });
     fireEvent.click(allFilterButton);
 
@@ -151,34 +150,28 @@ describe('TodoApp', () => {
   it('displays relevant empty messages based on todo state and filter', () => {
     render(<TodoApp />);
 
-    // Initially, no todos exist
     expect(screen.getByText('No todos yet. Add one above!')).toBeInTheDocument();
 
-    // Add an active todo
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
     fireEvent.change(inputElement, { target: { value: 'First todo' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
     expect(screen.getByText('First todo')).toBeInTheDocument();
     expect(screen.queryByText('No todos yet. Add one above!')).not.toBeInTheDocument();
 
-    // Mark it completed
     fireEvent.click(screen.getByText('First todo'));
 
-    // Filter to active - should show "No active todos!" message
     fireEvent.click(screen.getByRole('button', { name: /active/i }));
     expect(screen.queryByText('First todo')).not.toBeInTheDocument();
     expect(screen.getByText('No active todos!')).toBeInTheDocument();
 
-    // Filter to completed - should show the completed todo and not the empty message for completed
     fireEvent.click(screen.getByRole('button', { name: /completed/i }));
     expect(screen.getByText('First todo')).toBeInTheDocument();
-    expect(screen.queryByText('No completed todos!')).not.toBeInTheDocument(); // Message not shown if there are completed todos
+    expect(screen.queryByText('No completed todos!')).not.toBeInTheDocument();
 
-    // Delete the todo
-    const deleteButton = screen.getByRole('button', { name: /delete/i });
+    const todoItemContainer = screen.getByText('First todo').closest('.todo-item');
+    const deleteButton = todoItemContainer.querySelector('[aria-label="Delete todo"]');
     fireEvent.click(deleteButton);
 
-    // Filter to all - should show "No todos yet. Add one above!" again
     fireEvent.click(screen.getByRole('button', { name: /all/i }));
     expect(screen.getByText('No todos yet. Add one above!')).toBeInTheDocument();
     expect(screen.queryByText('First todo')).not.toBeInTheDocument();
@@ -188,31 +181,150 @@ describe('TodoApp', () => {
     render(<TodoApp />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
-    // 1. Add a todo item
     fireEvent.change(inputElement, { target: { value: 'Editable task' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
     const todoItem = screen.getByText('Editable task');
 
-    // Ensure it's not completed initially
-    expect(todoItem).not.toHaveClass('completed');
+    expect(todoItem.closest('.todo-item')).not.toHaveClass('completed');
 
-    // 2. Start editing that todo item
-    const editButton = screen.getByRole('button', { name: /edit/i });
+    const editButton = todoItem.closest('.todo-item').querySelector('[aria-label="Edit todo"]');
     fireEvent.click(editButton);
 
-    // Verify it's in edit mode (e.g., input field visible)
     const editInputField = screen.getByDisplayValue('Editable task');
     expect(editInputField).toBeInTheDocument();
 
-    // 3. Attempt to click (toggle) the todo item
-    fireEvent.click(todoItem); // Click the original text element or its parent
+    fireEvent.click(todoItem);
 
-    // 4. Assert that its completion status has *not* changed
-    expect(todoItem).not.toHaveClass('completed');
+    expect(todoItem.closest('.todo-item')).not.toHaveClass('completed');
 
-    // 5. Cancel the edit to clean up
     fireEvent.keyDown(editInputField, { key: 'Escape', code: 'Escape' });
-    expect(editInputField).not.toBeInTheDocument(); // Verify edit mode exited
-    expect(screen.getByText('Editable task')).toBeInTheDocument(); // Original text should be visible again
+    expect(editInputField).not.toBeInTheDocument();
+    expect(screen.getByText('Editable task')).toBeInTheDocument();
+  });
+
+  it('filters todos based on search term', () => {
+    render(<TodoApp />);
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+
+    fireEvent.change(inputElement, { target: { value: 'Buy milk' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    fireEvent.change(inputElement, { target: { value: 'Walk the dog' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    fireEvent.change(inputElement, { target: { value: 'Go to gym' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    // Search for 'walk'
+    const searchInput = screen.getByPlaceholderText('Search todos...');
+    fireEvent.change(searchInput, { target: { value: 'walk' } });
+
+    expect(screen.queryByText('Buy milk')).not.toBeInTheDocument();
+    expect(screen.getByText('Walk the dog')).toBeInTheDocument();
+    expect(screen.queryByText('Go to gym')).not.toBeInTheDocument();
+
+    // Search for 'gym'
+    fireEvent.change(searchInput, { target: { value: 'gym' } });
+    expect(screen.queryByText('Buy milk')).not.toBeInTheDocument();
+    expect(screen.queryByText('Walk the dog')).not.toBeInTheDocument();
+    expect(screen.getByText('Go to gym')).toBeInTheDocument();
+
+    // Clear search
+    fireEvent.change(searchInput, { target: { value: '' } });
+    expect(screen.getByText('Buy milk')).toBeInTheDocument();
+    expect(screen.getByText('Walk the dog')).toBeInTheDocument();
+    expect(screen.getByText('Go to gym')).toBeInTheDocument();
+  });
+
+  it('clears all completed todos when "Clear completed" button is clicked', () => {
+    render(<TodoApp />);
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+
+    // Add active todo
+    fireEvent.change(inputElement, { target: { value: 'Active todo 1' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    // Add completed todo 1
+    fireEvent.change(inputElement, { target: { value: 'Completed todo 1' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+    fireEvent.click(screen.getByText('Completed todo 1'));
+
+    // Add active todo 2
+    fireEvent.change(inputElement, { target: { value: 'Active todo 2' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    // Add completed todo 2
+    fireEvent.change(inputElement, { target: { value: 'Completed todo 2' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+    fireEvent.click(screen.getByText('Completed todo 2'));
+
+    // Ensure all todos are visible initially (or under 'all' filter)
+    fireEvent.click(screen.getByRole('button', { name: /all/i }));
+    expect(screen.getByText('Active todo 1')).toBeInTheDocument();
+    expect(screen.getByText('Completed todo 1')).toBeInTheDocument();
+    expect(screen.getByText('Active todo 2')).toBeInTheDocument();
+    expect(screen.getByText('Completed todo 2')).toBeInTheDocument();
+
+    // Check if "Clear completed" button is visible
+    const clearCompletedButton = screen.getByRole('button', { name: /Clear completed/i });
+    expect(clearCompletedButton).toBeInTheDocument();
+    expect(clearCompletedButton).toHaveTextContent('Clear 2 completed');
+
+    // Click the button
+    fireEvent.click(clearCompletedButton);
+
+    // Assert completed todos are removed
+    expect(screen.getByText('Active todo 1')).toBeInTheDocument();
+    expect(screen.queryByText('Completed todo 1')).not.toBeInTheDocument();
+    expect(screen.getByText('Active todo 2')).toBeInTheDocument();
+    expect(screen.queryByText('Completed todo 2')).not.toBeInTheDocument();
+
+    // Assert the "Clear completed" button is no longer visible
+    expect(screen.queryByRole('button', { name: /Clear completed/i })).not.toBeInTheDocument();
+  });
+
+  it('updates todo stats correctly', () => {
+    render(<TodoApp />);
+
+    // Initially 0 items, 0 completed
+    expect(screen.getByText('0 items left')).toBeInTheDocument();
+    expect(screen.getByText('0 completed')).toBeInTheDocument();
+
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+
+    // Add 1 active todo
+    fireEvent.change(inputElement, { target: { value: 'Todo 1' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+    expect(screen.getByText('1 item left')).toBeInTheDocument();
+    expect(screen.getByText('0 completed')).toBeInTheDocument();
+
+    // Add another active todo
+    fireEvent.change(inputElement, { target: { value: 'Todo 2' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+    expect(screen.getByText('2 items left')).toBeInTheDocument();
+    expect(screen.getByText('0 completed')).toBeInTheDocument();
+
+    // Mark Todo 1 as completed
+    fireEvent.click(screen.getByText('Todo 1'));
+    expect(screen.getByText('1 item left')).toBeInTheDocument();
+    expect(screen.getByText('1 completed')).toBeInTheDocument();
+
+    // Mark Todo 2 as completed
+    fireEvent.click(screen.getByText('Todo 2'));
+    expect(screen.getByText('0 items left')).toBeInTheDocument();
+    expect(screen.getByText('2 completed')).toBeInTheDocument();
+
+    // Delete Todo 1
+    const todo1Container = screen.getByText('Todo 1').closest('.todo-item');
+    const deleteButton1 = todo1Container.querySelector('[aria-label="Delete todo"]');
+    fireEvent.click(deleteButton1);
+    expect(screen.getByText('0 items left')).toBeInTheDocument();
+    expect(screen.getByText('1 completed')).toBeInTheDocument();
+
+    // Clear completed
+    const clearCompletedButton = screen.getByRole('button', { name: /Clear completed/i });
+    fireEvent.click(clearCompletedButton);
+    expect(screen.getByText('0 items left')).toBeInTheDocument();
+    expect(screen.getByText('0 completed')).toBeInTheDocument();
   });
 });
