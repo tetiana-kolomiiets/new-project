@@ -1,14 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import TodoApp from '../src/components/TodoApp';
+import App from '../src/components/TodoApp';
 
 describe('TodoApp', () => {
   it('renders TodoApp component', () => {
-    render(<TodoApp />);
+    render(<App />);
     expect(screen.getByText('Todo List')).toBeInTheDocument();
   });
 
   it('adds a new todo item', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
     fireEvent.change(inputElement, { target: { value: 'Buy groceries' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
@@ -17,7 +17,7 @@ describe('TodoApp', () => {
   });
 
   it('toggles a todo item as completed and back to active', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
     fireEvent.change(inputElement, { target: { value: 'Walk the dog' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
@@ -34,7 +34,7 @@ describe('TodoApp', () => {
   });
 
   it('deletes a todo item', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
     fireEvent.change(inputElement, { target: { value: 'Clean room' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
@@ -50,7 +50,7 @@ describe('TodoApp', () => {
   });
 
   it('edits a todo item and saves changes', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
     fireEvent.change(inputElement, { target: { value: 'Original text' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
@@ -68,7 +68,7 @@ describe('TodoApp', () => {
   });
 
   it('edits a todo item and cancels changes', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
     fireEvent.change(inputElement, { target: { value: 'Original text to cancel' } });
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
@@ -86,7 +86,7 @@ describe('TodoApp', () => {
   });
 
   it('filters todos by active', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
     fireEvent.change(inputElement, { target: { value: 'Active task' } });
@@ -104,7 +104,7 @@ describe('TodoApp', () => {
   });
 
   it('filters todos by completed', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
     fireEvent.change(inputElement, { target: { value: 'Another active task' } });
@@ -122,7 +122,7 @@ describe('TodoApp', () => {
   });
 
   it('filters todos by all', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
     fireEvent.change(inputElement, { target: { value: 'Active task for all' } });
@@ -143,7 +143,7 @@ describe('TodoApp', () => {
   });
 
   it('displays relevant empty messages based on todo state and filter', () => {
-    render(<TodoApp />);
+    render(<App />);
 
     expect(screen.getByText('No todos yet. Add one above!')).toBeInTheDocument();
 
@@ -173,7 +173,7 @@ describe('TodoApp', () => {
   });
 
   it('does not toggle completion status when a todo item is being edited', () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
     fireEvent.change(inputElement, { target: { value: 'Editable task' } });
@@ -198,7 +198,7 @@ describe('TodoApp', () => {
   });
 
   it('sorts todos correctly by different criteria', async () => {
-    render(<TodoApp />);
+    render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
 
     // Add todos in a specific order to test sorting
