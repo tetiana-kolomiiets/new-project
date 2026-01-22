@@ -110,6 +110,49 @@ h1 {
   transform: scale(0.98);
 }
 
+.controls-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.controls-row .filter-container {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Sort Component */
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s;
+  min-width: 150px;
+}
+
+.sort-select:focus {
+  border-color: #667eea;
+}
+
 .todo-list {
   list-style: none;
 }
@@ -329,29 +372,6 @@ h1 {
 
 .clear-search-button:hover {
   background: #777;
-}
-
-/* Clear Completed Button */
-.clear-completed-button {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  background: #ff4757;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.clear-completed-button:hover {
-  background: #ee5a6f;
-}
-
-.clear-completed-button:active {
-  transform: scale(0.98);
 }
 
 /* Priority Select */

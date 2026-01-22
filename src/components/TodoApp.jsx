@@ -1,22 +1,24 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import TodoInput from './TodoInput';
 import FilterTabs from './FilterTabs';
 import TodoList from './TodoList';
 import TodoStats from './TodoStats';
 import TodoSearch from './TodoSearch';
-import ClearCompletedButton from './ClearCompletedButton';
+import TodoSort from './TodoSort';
+import useLocalStorage from '../hooks/useLocalStorage';
 
 function App() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useLocalStorage('todos', []);
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'active', 'completed'
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
 
   const addTodo = (text, priority = 'medium') => {
     setTodos((prev) => [
       ...prev,
-      { id: Date.now(), text, completed: false, priority },
+      { id: Date.now(), text, completed: false, priority, createdAt: Date.now() },
     ]);
   };
 
@@ -68,24 +70,45 @@ function App() {
     }
   };
 
-  const clearCompleted = () => {
-    setTodos((prev) => prev.filter((todo) => !todo.completed));
-  };
+  const filteredAndSortedTodos = useMemo(() => {
+    // First filter
+    let filtered = todos.filter((todo) => {
+      // Filter by status
+      if (filter === 'active' && todo.completed) return false;
+      if (filter === 'completed' && !todo.completed) return false;
+      
+      // Filter by search term
+      if (searchTerm.trim() !== '') {
+        return todo.text.toLowerCase().includes(searchTerm.toLowerCase());
+      }
+      
+      return true;
+    });
 
-  const filteredTodos = todos.filter((todo) => {
-    // Filter by status
-    if (filter === 'active' && todo.completed) return false;
-    if (filter === 'completed' && !todo.completed) return false;
-    
-    // Filter by search term
-    if (searchTerm.trim() !== '') {
-      return todo.text.toLowerCase().includes(searchTerm.toLowerCase());
-    }
-    
-    return true;
-  });
+    // Then sort
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return (b.createdAt || b.id) - (a.createdAt || a.id);
+        case 'oldest':
+          return (a.createdAt || a.id) - (b.createdAt || b.id);
+        case 'priority':
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          const aPriority = priorityOrder[a.priority] || 2;
+          const bPriority = priorityOrder[b.priority] || 2;
+          if (bPriority !== aPriority) {
+            return bPriority - aPriority;
+          }
+          return (b.createdAt || b.id) - (a.createdAt || a.id);
+        case 'alphabetical':
+          return a.text.localeCompare(b.text);
+        default:
+          return 0;
+      }
+    });
 
-  const completedCount = todos.filter((todo) => todo.completed).length;
+    return sorted;
+  }, [todos, filter, searchTerm, sortBy]);
 
   const emptyMessage =
     todos.length === 0
@@ -103,15 +126,12 @@ function App() {
         <TodoStats todos={todos} />
         <TodoInput onAdd={addTodo} />
         <TodoSearch onSearch={setSearchTerm} />
-        <FilterTabs filter={filter} onChange={setFilter} />
-        {completedCount > 0 && (
-          <ClearCompletedButton
-            completedCount={completedCount}
-            onClear={clearCompleted}
-          />
-        )}
+        <div className="controls-row">
+          <FilterTabs filter={filter} onChange={setFilter} />
+          <TodoSort sortBy={sortBy} onSortChange={setSortBy} />
+        </div>
         <TodoList
-          todos={filteredTodos}
+          todos={filteredAndSortedTodos}
           emptyMessage={emptyMessage}
           editingId={editingId}
           editText={editText}

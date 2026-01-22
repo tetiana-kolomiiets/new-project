@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import TodoApp from '../src/components/TodoApp';
 
 describe('TodoApp', () => {
@@ -43,13 +43,8 @@ describe('TodoApp', () => {
 
     // Assuming the delete button for a todo item is within its container, e.g., a sibling
     const todoItemContainer = screen.getByText('Clean room').closest('.todo-item');
-    const deleteButton = screen.getByRole('button', { name: /delete/i, hidden: true }); // It might be visually hidden but accessible
-    // If the button is explicitly linked to the todo item, we might need a more specific selector.
-    // For now, assuming it's the only one or that RTL finds the correct one related to the todo
-    // Let's refine this to be specific to the todo item if necessary.
-    // Given the component structure, it's likely a button near the todo text.
-    // We'll click the delete button closest to the 'Clean room' text.
-    fireEvent.click(todoItemContainer.querySelector('[aria-label="Delete todo"]') || deleteButton);
+    const deleteButton = todoItemContainer.querySelector('[aria-label="Delete todo"]');
+    fireEvent.click(deleteButton);
 
     expect(screen.queryByText('Clean room')).not.toBeInTheDocument();
   });
@@ -326,5 +321,91 @@ describe('TodoApp', () => {
     fireEvent.click(clearCompletedButton);
     expect(screen.getByText('0 items left')).toBeInTheDocument();
     expect(screen.getByText('0 completed')).toBeInTheDocument();
+  });
+
+  it('sorts todos correctly by different criteria', async () => {
+    render(<TodoApp />);
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+
+    // Add todos in a specific order to test sorting
+    fireEvent.change(inputElement, { target: { value: 'Zeta Task' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    fireEvent.change(inputElement, { target: { value: 'Alpha Task' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    fireEvent.change(inputElement, { target: { value: 'Beta Task' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    // Helper to get text content of todo items in displayed order
+    const getDisplayedTodoTexts = () =>
+      screen.getAllByRole('listitem').map(item => item.querySelector('.todo-text').textContent);
+
+    // Default sort is 'newest' (Beta Task, Alpha Task, Zeta Task)
+    await waitFor(() => {
+      expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Alpha Task', 'Zeta Task']);
+    });
+
+    const sortSelect = screen.getByRole('combobox', { name: /sort by/i });
+
+    // Sort by 'oldest'
+    fireEvent.change(sortSelect, { target: { value: 'oldest' } });
+    await waitFor(() => {
+      expect(getDisplayedTodoTexts()).toEqual(['Zeta Task', 'Alpha Task', 'Beta Task']);
+    });
+
+    // Sort by 'alphabetical'
+    fireEvent.change(sortSelect, { target: { value: 'alphabetical' } });
+    await waitFor(() => {
+      expect(getDisplayedTodoTexts()).toEqual(['Alpha Task', 'Beta Task', 'Zeta Task']);
+    });
+
+    // Revert to 'newest' to confirm
+    fireEvent.change(sortSelect, { target: { value: 'newest' } });
+    await waitFor(() => {
+      expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Alpha Task', 'Zeta Task']);
+    });
+
+    // Test sorting when filters are applied (e.g., sort active todos)
+
+    // Mark 'Alpha Task' as completed (from the initial set)
+    fireEvent.click(screen.getByText('Alpha Task'));
+
+    // Switch to 'active' filter
+    fireEvent.click(screen.getByRole('button', { name: /active/i }));
+    await waitFor(() => {
+      // Expected active todos: Beta Task, Zeta Task. Sorted by newest (default sort for this view).
+      expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Zeta Task']);
+    });
+
+    // While in 'active' filter, sort by 'alphabetical'
+    fireEvent.change(sortSelect, { target: { value: 'alphabetical' } });
+    await waitFor(() => {
+      // Active todos: Beta Task, Zeta Task. Alphabetical: Beta Task, Zeta Task.
+      expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Zeta Task']);
+    });
+
+    // While in 'active' filter, sort by 'oldest'
+    fireEvent.change(sortSelect, { target: { value: 'oldest' } });
+    await waitFor(() => {
+      // Active todos: Beta Task, Zeta Task. Oldest: Zeta Task, Beta Task (as Zeta was added first).
+      expect(getDisplayedTodoTexts()).toEqual(['Zeta Task', 'Beta Task']);
+    });
+
+    // Switch to 'completed' filter
+    fireEvent.click(screen.getByRole('button', { name: /completed/i }));
+    await waitFor(() => {
+      // Only 'Alpha Task' is completed. Regardless of sort, only one item.
+      expect(getDisplayedTodoTexts()).toEqual(['Alpha Task']);
+    });
+
+    // Switch to 'all' filter and apply alphabetical sort
+    fireEvent.click(screen.getByRole('button', { name: /all/i }));
+    fireEvent.change(sortSelect, { target: { value: 'alphabetical' } });
+    await waitFor(() => {
+      // All todos: Alpha Task (completed), Beta Task, Zeta Task
+      // Alphabetical order: Alpha Task, Beta Task, Zeta Task
+      expect(getDisplayedTodoTexts()).toEqual(['Alpha Task', 'Beta Task', 'Zeta Task']);
+    });
   });
 });
