@@ -27,7 +27,7 @@ describe('TodoSort', () => {
 
     expect(screen.getByRole('option', { name: 'Newest First' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Oldest First' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'By Priority' })).toBeInTheDocument();
+    // 'By Priority' option was removed from the component
     expect(screen.getByRole('option', { name: 'A-Z' })).toBeInTheDocument();
   });
 
@@ -36,10 +36,11 @@ describe('TodoSort', () => {
 
     const selectElement = screen.getByRole('combobox');
 
-    fireEvent.change(selectElement, { target: { value: 'priority' } });
+    // Changed 'priority' to 'oldest' as 'priority' option was removed
+    fireEvent.change(selectElement, { target: { value: 'oldest' } });
 
     expect(mockOnSortChange).toHaveBeenCalledTimes(1);
-    expect(mockOnSortChange).toHaveBeenCalledWith('priority');
+    expect(mockOnSortChange).toHaveBeenCalledWith('oldest');
 
     fireEvent.change(selectElement, { target: { value: 'alphabetical' } });
 
