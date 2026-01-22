@@ -29,10 +29,10 @@ describe('TodoItem', () => {
     render(<TodoItem todo={mockTodo} isEditing={false} {...mockHandlers} />);
 
     expect(screen.getByText('Learn Jest')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit todo' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete todo' })).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
     // Ensure no priority badge as it's not part of the current component's rendering logic
     expect(screen.queryByText(/priority/i)).not.toBeInTheDocument();
   });
@@ -55,7 +55,7 @@ describe('TodoItem', () => {
   // Test Case 4: Calls onDelete when delete button is clicked
   test('calls onDelete when delete button is clicked', () => {
     render(<TodoItem todo={mockTodo} isEditing={false} {...mockHandlers} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete todo' }));
     expect(mockHandlers.onDelete).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onDelete).toHaveBeenCalledWith(mockTodo.id);
   });
@@ -63,7 +63,7 @@ describe('TodoItem', () => {
   // Test Case 5: Calls onStartEdit when edit button is clicked
   test('calls onStartEdit when edit button is clicked', () => {
     render(<TodoItem todo={mockTodo} isEditing={false} {...mockHandlers} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit todo' }));
     expect(mockHandlers.onStartEdit).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onStartEdit).toHaveBeenCalledWith(mockTodo.id, mockTodo.text);
   });
@@ -84,8 +84,8 @@ describe('TodoItem', () => {
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveValue(editText);
     expect(inputElement).toHaveFocus();
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel editing' })).toBeInTheDocument();
     expect(screen.queryByText('Learn Jest')).not.toBeInTheDocument();
   });
 
@@ -133,7 +133,7 @@ describe('TodoItem', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledWith(mockTodo.id);
   });
@@ -149,7 +149,7 @@ describe('TodoItem', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel editing' }));
     expect(mockHandlers.onCancelEdit).toHaveBeenCalledTimes(1);
   });
 
