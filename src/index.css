@@ -248,3 +248,156 @@ h1 {
   padding: 40px 20px;
   font-style: italic;
 }
+
+/* Stats Component */
+.stats-container {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-value.active {
+  color: #667eea;
+}
+
+.stat-value.completed {
+  color: #2ed573;
+}
+
+/* Search Component */
+.search-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  border-color: #667eea;
+}
+
+.clear-search-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #999;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.clear-search-button:hover {
+  background: #777;
+}
+
+/* Clear Completed Button */
+.clear-completed-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.clear-completed-button:hover {
+  background: #ee5a6f;
+}
+
+.clear-completed-button:active {
+  transform: scale(0.98);
+}
+
+/* Priority Select */
+.priority-select {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.priority-select:focus {
+  border-color: #667eea;
+}
+
+/* Priority Badge */
+.todo-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.priority-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priority-low {
+  background: #e8f5e9;
+  color: #2ed573;
+}
+
+.priority-medium {
+  background: #fff3e0;
+  color: #ffa502;
+}
+
+.priority-high {
+  background: #ffebee;
+  color: #ff4757;
+}
