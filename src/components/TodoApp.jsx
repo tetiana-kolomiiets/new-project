@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import TodoInput from './TodoInput';
 import FilterTabs from './FilterTabs';
 import TodoList from './TodoList';
-import TodoStats from './TodoStats';
 import TodoSearch from './TodoSearch';
 import TodoSort from './TodoSort';
 import useLocalStorage from '../hooks/useLocalStorage';
@@ -123,7 +122,6 @@ function App() {
     <div className="app">
       <div className="container">
         <h1>Todo List</h1>
-        <TodoStats todos={todos} />
         <TodoInput onAdd={addTodo} />
         <TodoSearch onSearch={setSearchTerm} />
         <div className="controls-row">
