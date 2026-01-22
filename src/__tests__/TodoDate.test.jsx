@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react';
 import TodoDate from '../src/components/TodoDate';
 
 describe('TodoDate', () => {
-  // Set a fixed current date for consistent testing of relative time (Today, Yesterday, X days ago)
-  const MOCK_CURRENT_DATE = new Date('2023-11-10T12:00:00.000Z'); // November 10, 2023, 12:00 PM UTC
+  // Set a fixed current date for consistent testing of relative time
+  const MOCK_CURRENT_DATE = new Date('2023-11-10T12:00:00'); // November 10, 2023, 12:00 PM (local time)
 
   beforeAll(() => {
     jest.useFakeTimers();
@@ -20,64 +20,88 @@ describe('TodoDate', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders "Today" for a date created today', () => {
-    // A date on the same day as MOCK_CURRENT_DATE
-    const today = new Date('2023-11-10T08:00:00.000Z');
-    render(<TodoDate createdAt={today} />);
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Today')).toHaveAttribute('title', today.toLocaleString());
+  it('renders "just now" for a date created within the last minute', () => {
+    const justNow = new Date('2023-11-10T11:59:45'); // 15 seconds before MOCK_CURRENT_DATE
+    render(<TodoDate createdAt={justNow} />);
+    expect(screen.getByText('📅 just now')).toBeInTheDocument();
+    expect(screen.getByText('📅 just now')).toHaveAttribute('title', justNow.toLocaleString());
   });
 
-  it('renders "Yesterday" for a date created yesterday', () => {
-    // A date one day before MOCK_CURRENT_DATE
-    const yesterday = new Date('2023-11-09T18:00:00.000Z');
-    render(<TodoDate createdAt={yesterday} />);
-    expect(screen.getByText('Yesterday')).toBeInTheDocument();
-    expect(screen.getByText('Yesterday')).toHaveAttribute('title', yesterday.toLocaleString());
+  it('renders "Xm ago" for dates created within the last hour', () => {
+    const fiveMinutesAgo = new Date('2023-11-10T11:55:00'); // 5 minutes before
+    render(<TodoDate createdAt={fiveMinutesAgo} />);
+    expect(screen.getByText('📅 5m ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 5m ago')).toHaveAttribute('title', fiveMinutesAgo.toLocaleString());
+
+    // Test another case, e.g., 59 minutes ago
+    const fiftyNineMinutesAgo = new Date('2023-11-10T11:01:00'); // 59 minutes before
+    render(<TodoDate createdAt={fiftyNineMinutesAgo} />);
+    expect(screen.getByText('📅 59m ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 59m ago')).toHaveAttribute('title', fiftyNineMinutesAgo.toLocaleString());
   });
 
-  it('renders "X days ago" for dates within the last week (2-6 days ago)', () => {
-    // A date three days before MOCK_CURRENT_DATE
-    const threeDaysAgo = new Date('2023-11-07T10:00:00.000Z');
-    render(<TodoDate createdAt={threeDaysAgo} />);
-    expect(screen.getByText('3 days ago')).toBeInTheDocument();
-    expect(screen.getByText('3 days ago')).toHaveAttribute('title', threeDaysAgo.toLocaleString());
+  it('renders "Xh ago" for dates created within the last 24 hours', () => {
+    const twoHoursAgo = new Date('2023-11-10T10:00:00'); // 2 hours before
+    render(<TodoDate createdAt={twoHoursAgo} />);
+    expect(screen.getByText('📅 2h ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 2h ago')).toHaveAttribute('title', twoHoursAgo.toLocaleString());
 
-    // Test another case, e.g., 5 days ago
-    const fiveDaysAgo = new Date('2023-11-05T09:00:00.000Z');
-    render(<TodoDate createdAt={fiveDaysAgo} />);
-    expect(screen.getByText('5 days ago')).toBeInTheDocument();
-    expect(screen.getByText('5 days ago')).toHaveAttribute('title', fiveDaysAgo.toLocaleString());
+    // Test another case, e.g., 23 hours ago
+    const twentyThreeHoursAgo = new Date('2023-11-09T13:00:00'); // 23 hours before
+    render(<TodoDate createdAt={twentyThreeHoursAgo} />);
+    expect(screen.getByText('📅 23h ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 23h ago')).toHaveAttribute('title', twentyThreeHoursAgo.toLocaleString());
   });
 
-  it('renders formatted date (Month Day) for dates more than a week ago in the same year', () => {
-    // A date on October 31, 2023 (more than 7 days before Nov 10, 2023)
-    const tenDaysAgo = new Date('2023-10-31T09:00:00.000Z');
-    render(<TodoDate createdAt={tenDaysAgo} />);
-    // Using 'en-US' locale, it should format as 'Oct 31'
-    expect(screen.getByText('Oct 31')).toBeInTheDocument();
-    expect(screen.getByText('Oct 31')).toHaveAttribute('title', tenDaysAgo.toLocaleString());
-
-    // A date earlier in the same year, e.g., Jan 15, 2023
-    const earlyThisYear = new Date('2023-01-15T12:00:00.000Z');
-    render(<TodoDate createdAt={earlyThisYear} />);
-    expect(screen.getByText('Jan 15')).toBeInTheDocument();
-    expect(screen.getByText('Jan 15')).toHaveAttribute('title', earlyThisYear.toLocaleString());
+  it('renders "1d ago" for a date created yesterday (diffDays = 1)', () => {
+    const oneDayAgo = new Date('2023-11-09T11:00:00'); // 25 hours before (diffDays will be 1)
+    render(<TodoDate createdAt={oneDayAgo} />);
+    expect(screen.getByText('📅 1d ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 1d ago')).toHaveAttribute('title', oneDayAgo.toLocaleString());
   });
 
-  it('renders formatted date (Month Day, Year) for dates more than a week ago in a different year', () => {
-    // A date on November 1, 2022 (different year from MOCK_CURRENT_DATE)
-    const lastYearDate = new Date('2022-11-01T15:00:00.000Z');
+  it('renders "Xd ago" for dates 2-6 days ago', () => {
+    const twoDaysAgo = new Date('2023-11-08T11:00:00');
+    render(<TodoDate createdAt={twoDaysAgo} />);
+    expect(screen.getByText('📅 2d ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 2d ago')).toHaveAttribute('title', twoDaysAgo.toLocaleString());
+
+    const sixDaysAgo = new Date('2023-11-04T11:00:00');
+    render(<TodoDate createdAt={sixDaysAgo} />);
+    expect(screen.getByText('📅 6d ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 6d ago')).toHaveAttribute('title', sixDaysAgo.toLocaleString());
+  });
+
+  it('renders "Xw ago" for dates 1-4 weeks ago (7-29 days ago)', () => {
+    const oneWeekAgo = new Date('2023-11-03T11:00:00'); // 7 days before, diffDays = 7
+    render(<TodoDate createdAt={oneWeekAgo} />);
+    expect(screen.getByText('📅 1w ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 1w ago')).toHaveAttribute('title', oneWeekAgo.toLocaleString());
+
+    const fourWeeksAgo = new Date('2023-10-12T11:00:00'); // 29 days before, diffDays = 29
+    render(<TodoDate createdAt={fourWeeksAgo} />);
+    expect(screen.getByText('📅 4w ago')).toBeInTheDocument();
+    expect(screen.getByText('📅 4w ago')).toHaveAttribute('title', fourWeeksAgo.toLocaleString());
+  });
+
+  it('renders formatted date (Month Day) for dates 30 days or older', () => {
+    const thirtyDaysAgo = new Date('2023-10-11T11:00:00'); // 30 days before, diffDays = 30
+    render(<TodoDate createdAt={thirtyDaysAgo} />);
+    // Using 'en-US' locale, it should format as 'Oct 11' (no year)
+    expect(screen.getByText('📅 Oct 11')).toBeInTheDocument();
+    expect(screen.getByText('📅 Oct 11')).toHaveAttribute('title', thirtyDaysAgo.toLocaleString());
+
+    // Test a date from a different year, still no year in displayed text
+    const lastYearDate = new Date('2022-11-01T15:00:00');
     render(<TodoDate createdAt={lastYearDate} />);
-    // Using 'en-US' locale, it should format as 'Nov 1, 2022'
-    expect(screen.getByText('Nov 1, 2022')).toBeInTheDocument();
-    expect(screen.getByText('Nov 1, 2022')).toHaveAttribute('title', lastYearDate.toLocaleString());
+    expect(screen.getByText('📅 Nov 1')).toBeInTheDocument();
+    expect(screen.getByText('📅 Nov 1')).toHaveAttribute('title', lastYearDate.toLocaleString());
   });
 
   it('sets the full date and time in the title attribute for accessibility', () => {
-    const testDate = new Date('2023-10-25T14:30:00.000Z');
+    const testDate = new Date('2023-10-25T14:30:00'); // This date would display as "Oct 25"
     render(<TodoDate createdAt={testDate} />);
     // Regardless of the displayed text, the title should be the full locale string
-    expect(screen.getByText('Oct 25')).toHaveAttribute('title', testDate.toLocaleString());
+    expect(screen.getByText('📅 Oct 25')).toHaveAttribute('title', testDate.toLocaleString());
   });
 });
