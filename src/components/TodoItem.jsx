@@ -38,14 +38,6 @@ function TodoItem({
             <span className="todo-text" onClick={() => onToggle(todo.id)}>
               {todo.text}
             </span>
-            {todo.priority && (
-              <span
-                className={`priority-badge priority-${todo.priority}`}
-                title={`Priority: ${todo.priority}`}
-              >
-                {todo.priority}
-              </span>
-            )}
           </div>
           <div className="action-buttons">
             <button

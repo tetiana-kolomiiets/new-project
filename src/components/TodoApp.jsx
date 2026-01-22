@@ -12,10 +12,10 @@ function App() {
   const [filter, setFilter] = useState('all'); // 'all', 'active', 'completed'
   const [sortBy, setSortBy] = useState('newest');
 
-  const addTodo = (text, priority = 'medium') => {
+  const addTodo = (text) => {
     setTodos((prev) => [
       ...prev,
-      { id: Date.now(), text, completed: false, priority, createdAt: Date.now() },
+      { id: Date.now(), text, completed: false, createdAt: Date.now() },
     ]);
   };
 
@@ -84,14 +84,6 @@ function App() {
           return (b.createdAt || b.id) - (a.createdAt || a.id);
         case 'oldest':
           return (a.createdAt || a.id) - (b.createdAt || b.id);
-        case 'priority':
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          const aPriority = priorityOrder[a.priority] || 2;
-          const bPriority = priorityOrder[b.priority] || 2;
-          if (bPriority !== aPriority) {
-            return bPriority - aPriority;
-          }
-          return (b.createdAt || b.id) - (a.createdAt || a.id);
         case 'alphabetical':
           return a.text.localeCompare(b.text);
         default:
