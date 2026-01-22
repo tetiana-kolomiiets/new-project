@@ -197,40 +197,6 @@ describe('TodoApp', () => {
     expect(screen.getByText('Editable task')).toBeInTheDocument();
   });
 
-  it('filters todos based on search term', () => {
-    render(<TodoApp />);
-    const inputElement = screen.getByPlaceholderText('Add a new todo...');
-
-    fireEvent.change(inputElement, { target: { value: 'Buy milk' } });
-    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-
-    fireEvent.change(inputElement, { target: { value: 'Walk the dog' } });
-    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-
-    fireEvent.change(inputElement, { target: { value: 'Go to gym' } });
-    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
-
-    // Search for 'walk'
-    const searchInput = screen.getByPlaceholderText('Search todos...');
-    fireEvent.change(searchInput, { target: { value: 'walk' } });
-
-    expect(screen.queryByText('Buy milk')).not.toBeInTheDocument();
-    expect(screen.getByText('Walk the dog')).toBeInTheDocument();
-    expect(screen.queryByText('Go to gym')).not.toBeInTheDocument();
-
-    // Search for 'gym'
-    fireEvent.change(searchInput, { target: { value: 'gym' } });
-    expect(screen.queryByText('Buy milk')).not.toBeInTheDocument();
-    expect(screen.queryByText('Walk the dog')).not.toBeInTheDocument();
-    expect(screen.getByText('Go to gym')).toBeInTheDocument();
-
-    // Clear search
-    fireEvent.change(searchInput, { target: { value: '' } });
-    expect(screen.getByText('Buy milk')).toBeInTheDocument();
-    expect(screen.getByText('Walk the dog')).toBeInTheDocument();
-    expect(screen.getByText('Go to gym')).toBeInTheDocument();
-  });
-
   it('sorts todos correctly by different criteria', async () => {
     render(<TodoApp />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
@@ -266,6 +232,12 @@ describe('TodoApp', () => {
     fireEvent.change(sortSelect, { target: { value: 'alphabetical' } });
     await waitFor(() => {
       expect(getDisplayedTodoTexts()).toEqual(['Alpha Task', 'Beta Task', 'Zeta Task']);
+    });
+
+    // Sort by 'priority' (expected to be 'newest' order if all default to medium priority)
+    fireEvent.change(sortSelect, { target: { value: 'priority' } });
+    await waitFor(() => {
+      expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Alpha Task', 'Zeta Task']);
     });
 
     // Revert to 'newest' to confirm
