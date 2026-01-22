@@ -1,12 +1,20 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import TodoItem from '../src/components/TodoItem';
 
+// Mock the TodoDate component since it's an external dependency of TodoItem.
+// This allows us to test TodoItem in isolation and ensure it passes the correct props.
+jest.mock('../src/components/TodoDate', () => ({
+  __esModule: true,
+  default: ({ createdAt }) => <span data-testid="mock-todo-date">{createdAt}</span>,
+}));
+
 describe('TodoItem', () => {
   const mockTodo = {
     id: 1,
     text: 'Learn Jest',
     completed: false,
     priority: undefined, // Default to undefined for most tests
+    createdAt: '2023-01-01T12:00:00Z', // Default createdAt for consistency
   };
 
   const mockHandlers = {
@@ -220,5 +228,18 @@ describe('TodoItem', () => {
 
     expect(screen.queryByText(/priority/i)).not.toBeInTheDocument();
     expect(screen.queryByTitle(/priority/i)).not.toBeInTheDocument();
+  });
+
+  // Test Case 15: Renders TodoDate component with correct createdAt prop
+  test('renders TodoDate component with correct createdAt prop', () => {
+    const specificCreatedAt = '2023-10-27T10:00:00Z';
+    const todoWithDate = { ...mockTodo, createdAt: specificCreatedAt };
+    render(<TodoItem todo={todoWithDate} isEditing={false} {...mockHandlers} />);
+
+    // Assert that the mocked TodoDate component's output is in the document
+    // and that it received the correct createdAt prop value.
+    const todoDateElement = screen.getByTestId('mock-todo-date');
+    expect(todoDateElement).toBeInTheDocument();
+    expect(todoDateElement).toHaveTextContent(specificCreatedAt);
   });
 });

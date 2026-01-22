@@ -1,3 +1,5 @@
+import TodoDate from './TodoDate';
+
 function TodoItem({
   todo,
   isEditing,
@@ -35,17 +37,20 @@ function TodoItem({
       ) : (
         <>
           <div className="todo-content">
-            <span className="todo-text" onClick={() => onToggle(todo.id)}>
-              {todo.text}
-            </span>
-            {todo.priority && (
-              <span
-                className={`priority-badge priority-${todo.priority}`}
-                title={`Priority: ${todo.priority}`}
-              >
-                {todo.priority}
+            <div className="todo-main">
+              <span className="todo-text" onClick={() => onToggle(todo.id)}>
+                {todo.text}
               </span>
-            )}
+              {todo.priority && (
+                <span
+                  className={`priority-badge priority-${todo.priority}`}
+                  title={`Priority: ${todo.priority}`}
+                >
+                  {todo.priority}
+                </span>
+              )}
+            </div>
+            <TodoDate createdAt={todo.createdAt} />
           </div>
           <div className="action-buttons">
             <button

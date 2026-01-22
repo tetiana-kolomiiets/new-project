@@ -292,44 +292,6 @@ h1 {
   font-style: italic;
 }
 
-/* Stats Component */
-.stats-container {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #666;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-}
-
-.stat-value.active {
-  color: #667eea;
-}
-
-.stat-value.completed {
-  color: #2ed573;
-}
-
 /* Search Component */
 .search-container {
   position: relative;
@@ -394,8 +356,21 @@ h1 {
 .todo-content {
   flex: 1;
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.todo-main {
+  display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.todo-date {
+  font-size: 11px;
+  color: #999;
+  font-style: italic;
+  margin-left: 0;
 }
 
 .priority-badge {
