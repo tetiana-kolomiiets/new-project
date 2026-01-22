@@ -6,6 +6,7 @@ describe('TodoItem', () => {
     id: 1,
     text: 'Learn Jest',
     completed: false,
+    priority: undefined, // Default to undefined for most tests
   };
 
   const mockHandlers = {
@@ -31,6 +32,7 @@ describe('TodoItem', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/priority/i)).not.toBeInTheDocument(); // Ensure no priority badge by default
   });
 
   // Test Case 2: Applies 'completed' class when todo is completed
@@ -197,5 +199,26 @@ describe('TodoItem', () => {
     // Assert that our custom onEditKeyPress in turn called onSaveEdit
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledWith(mockTodo.id);
+  });
+
+  // Test Case 13: Renders priority badge when todo has priority
+  test('renders priority badge when todo has priority', () => {
+    const todoWithPriority = { ...mockTodo, priority: 'High' };
+    render(<TodoItem todo={todoWithPriority} isEditing={false} {...mockHandlers} />);
+
+    const priorityBadge = screen.getByText('High');
+    expect(priorityBadge).toBeInTheDocument();
+    expect(priorityBadge).toHaveClass('priority-badge');
+    expect(priorityBadge).toHaveClass('priority-High');
+    expect(priorityBadge).toHaveAttribute('title', 'Priority: High');
+  });
+
+  // Test Case 14: Does not render priority badge when todo has no priority
+  test('does not render priority badge when todo has no priority', () => {
+    const todoWithoutPriority = { ...mockTodo, priority: null }; // Test with null explicitly
+    render(<TodoItem todo={todoWithoutPriority} isEditing={false} {...mockHandlers} />);
+
+    expect(screen.queryByText(/priority/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/priority/i)).not.toBeInTheDocument();
   });
 });
