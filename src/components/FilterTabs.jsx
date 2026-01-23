@@ -1,8 +1,8 @@
 function FilterTabs({ filter, onChange }) {
   const options = [
-    { id: 'all', label: 'All' },
-    { id: 'active', label: 'Active' },
-    { id: 'completed', label: 'Completed' },
+    { id: 'all', label: 'All', icon: '📋' },
+    { id: 'active', label: 'Active', icon: '⚡' },
+    { id: 'completed', label: 'Done', icon: '✅' },
   ];
 
   return (
@@ -12,8 +12,10 @@ function FilterTabs({ filter, onChange }) {
           key={option.id}
           onClick={() => onChange(option.id)}
           className={`filter-button ${filter === option.id ? 'active' : ''}`}
+          title={option.label}
         >
-          {option.label}
+          <span className="filter-icon">{option.icon}</span>
+          <span className="filter-label">{option.label}</span>
         </button>
       ))}
     </div>

@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import TodoInput from './TodoInput';
 import FilterTabs from './FilterTabs';
 import TodoList from './TodoList';
-import TodoSearch from './TodoSearch';
 import TodoSort from './TodoSort';
 import useLocalStorage from '../hooks/useLocalStorage';
 
@@ -11,13 +10,12 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'active', 'completed'
-  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
 
-  const addTodo = (text, priority = 'medium') => {
+  const addTodo = (text) => {
     setTodos((prev) => [
       ...prev,
-      { id: Date.now(), text, completed: false, priority, createdAt: Date.now() },
+      { id: Date.now(), text, completed: false, createdAt: Date.now() },
     ]);
   };
 
@@ -76,11 +74,6 @@ function App() {
       if (filter === 'active' && todo.completed) return false;
       if (filter === 'completed' && !todo.completed) return false;
       
-      // Filter by search term
-      if (searchTerm.trim() !== '') {
-        return todo.text.toLowerCase().includes(searchTerm.toLowerCase());
-      }
-      
       return true;
     });
 
@@ -91,14 +84,6 @@ function App() {
           return (b.createdAt || b.id) - (a.createdAt || a.id);
         case 'oldest':
           return (a.createdAt || a.id) - (b.createdAt || b.id);
-        case 'priority':
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          const aPriority = priorityOrder[a.priority] || 2;
-          const bPriority = priorityOrder[b.priority] || 2;
-          if (bPriority !== aPriority) {
-            return bPriority - aPriority;
-          }
-          return (b.createdAt || b.id) - (a.createdAt || a.id);
         case 'alphabetical':
           return a.text.localeCompare(b.text);
         default:
@@ -107,7 +92,7 @@ function App() {
     });
 
     return sorted;
-  }, [todos, filter, searchTerm, sortBy]);
+  }, [todos, filter, sortBy]);
 
   const emptyMessage =
     todos.length === 0
@@ -123,7 +108,6 @@ function App() {
       <div className="container">
         <h1>Todo List</h1>
         <TodoInput onAdd={addTodo} />
-        <TodoSearch onSearch={setSearchTerm} />
         <div className="controls-row">
           <FilterTabs filter={filter} onChange={setFilter} />
           <TodoSort sortBy={sortBy} onSortChange={setSortBy} />

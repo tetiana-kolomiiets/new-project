@@ -1,13 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import TodoItem from '../src/components/TodoItem';
 
-// Mock the TodoDate component since it's an external dependency of TodoItem.
-// This allows us to test TodoItem in isolation and ensure it passes the correct props.
-jest.mock('../src/components/TodoDate', () => ({
-  __esModule: true,
-  default: ({ createdAt }) => <span data-testid="mock-todo-date">{createdAt}</span>,
-}));
-
 describe('TodoItem', () => {
   const mockTodo = {
     id: 1,
@@ -36,11 +29,12 @@ describe('TodoItem', () => {
     render(<TodoItem todo={mockTodo} isEditing={false} {...mockHandlers} />);
 
     expect(screen.getByText('Learn Jest')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit todo' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete todo' })).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
-    expect(screen.queryByText(/priority/i)).not.toBeInTheDocument(); // Ensure no priority badge by default
+    expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
+    // Ensure no priority badge as it's not part of the current component's rendering logic
+    expect(screen.queryByText(/priority/i)).not.toBeInTheDocument();
   });
 
   // Test Case 2: Applies 'completed' class when todo is completed
@@ -61,7 +55,7 @@ describe('TodoItem', () => {
   // Test Case 4: Calls onDelete when delete button is clicked
   test('calls onDelete when delete button is clicked', () => {
     render(<TodoItem todo={mockTodo} isEditing={false} {...mockHandlers} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete todo' }));
     expect(mockHandlers.onDelete).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onDelete).toHaveBeenCalledWith(mockTodo.id);
   });
@@ -69,7 +63,7 @@ describe('TodoItem', () => {
   // Test Case 5: Calls onStartEdit when edit button is clicked
   test('calls onStartEdit when edit button is clicked', () => {
     render(<TodoItem todo={mockTodo} isEditing={false} {...mockHandlers} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit todo' }));
     expect(mockHandlers.onStartEdit).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onStartEdit).toHaveBeenCalledWith(mockTodo.id, mockTodo.text);
   });
@@ -90,8 +84,8 @@ describe('TodoItem', () => {
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveValue(editText);
     expect(inputElement).toHaveFocus();
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel editing' })).toBeInTheDocument();
     expect(screen.queryByText('Learn Jest')).not.toBeInTheDocument();
   });
 
@@ -139,7 +133,7 @@ describe('TodoItem', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledWith(mockTodo.id);
   });
@@ -155,7 +149,7 @@ describe('TodoItem', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel editing' }));
     expect(mockHandlers.onCancelEdit).toHaveBeenCalledTimes(1);
   });
 
@@ -207,39 +201,5 @@ describe('TodoItem', () => {
     // Assert that our custom onEditKeyPress in turn called onSaveEdit
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledTimes(1);
     expect(mockHandlers.onSaveEdit).toHaveBeenCalledWith(mockTodo.id);
-  });
-
-  // Test Case 13: Renders priority badge when todo has priority
-  test('renders priority badge when todo has priority', () => {
-    const todoWithPriority = { ...mockTodo, priority: 'High' };
-    render(<TodoItem todo={todoWithPriority} isEditing={false} {...mockHandlers} />);
-
-    const priorityBadge = screen.getByText('High');
-    expect(priorityBadge).toBeInTheDocument();
-    expect(priorityBadge).toHaveClass('priority-badge');
-    expect(priorityBadge).toHaveClass('priority-High');
-    expect(priorityBadge).toHaveAttribute('title', 'Priority: High');
-  });
-
-  // Test Case 14: Does not render priority badge when todo has no priority
-  test('does not render priority badge when todo has no priority', () => {
-    const todoWithoutPriority = { ...mockTodo, priority: null }; // Test with null explicitly
-    render(<TodoItem todo={todoWithoutPriority} isEditing={false} {...mockHandlers} />);
-
-    expect(screen.queryByText(/priority/i)).not.toBeInTheDocument();
-    expect(screen.queryByTitle(/priority/i)).not.toBeInTheDocument();
-  });
-
-  // Test Case 15: Renders TodoDate component with correct createdAt prop
-  test('renders TodoDate component with correct createdAt prop', () => {
-    const specificCreatedAt = '2023-10-27T10:00:00Z';
-    const todoWithDate = { ...mockTodo, createdAt: specificCreatedAt };
-    render(<TodoItem todo={todoWithDate} isEditing={false} {...mockHandlers} />);
-
-    // Assert that the mocked TodoDate component's output is in the document
-    // and that it received the correct createdAt prop value.
-    const todoDateElement = screen.getByTestId('mock-todo-date');
-    expect(todoDateElement).toBeInTheDocument();
-    expect(todoDateElement).toHaveTextContent(specificCreatedAt);
   });
 });

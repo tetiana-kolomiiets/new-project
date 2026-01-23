@@ -1,5 +1,3 @@
-import TodoDate from './TodoDate';
-
 function TodoItem({
   todo,
   isEditing,
@@ -26,44 +24,35 @@ function TodoItem({
             autoFocus
           />
           <div className="edit-buttons">
-            <button onClick={() => onSaveEdit(todo.id)} className="save-button">
-              Save
+            <button onClick={() => onSaveEdit(todo.id)} className="save-button" title="Save changes">
+              ✓
             </button>
-            <button onClick={onCancelEdit} className="cancel-button">
-              Cancel
+            <button onClick={onCancelEdit} className="cancel-button" title="Cancel editing">
+              ✕
             </button>
           </div>
         </>
       ) : (
         <>
           <div className="todo-content">
-            <div className="todo-main">
-              <span className="todo-text" onClick={() => onToggle(todo.id)}>
-                {todo.text}
-              </span>
-              {todo.priority && (
-                <span
-                  className={`priority-badge priority-${todo.priority}`}
-                  title={`Priority: ${todo.priority}`}
-                >
-                  {todo.priority}
-                </span>
-              )}
-            </div>
-            <TodoDate createdAt={todo.createdAt} />
+            <span className="todo-text" onClick={() => onToggle(todo.id)}>
+              {todo.text}
+            </span>
           </div>
           <div className="action-buttons">
             <button
               onClick={() => onStartEdit(todo.id, todo.text)}
               className="edit-button"
+              title="Edit todo"
             >
-              Edit
+              ✏️
             </button>
             <button
               onClick={() => onDelete(todo.id)}
               className="delete-button"
+              title="Delete todo"
             >
-              Delete
+              🗑️
             </button>
           </div>
         </>

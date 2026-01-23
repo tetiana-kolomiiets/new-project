@@ -11,7 +11,7 @@ describe('FilterTabs', () => {
     // Check if all buttons are rendered
     const allButton = screen.getByRole('button', { name: /all/i });
     const activeButton = screen.getByRole('button', { name: /active/i });
-    const completedButton = screen.getByRole('button', { name: /completed/i });
+    const completedButton = screen.getByRole('button', { name: /done/i });
 
     expect(allButton).toBeInTheDocument();
     expect(activeButton).toBeInTheDocument();
@@ -27,7 +27,7 @@ describe('FilterTabs', () => {
     const mockOnChange = jest.fn();
     render(<FilterTabs filter="all" onChange={mockOnChange} />);
 
-    const completedButton = screen.getByRole('button', { name: /completed/i });
+    const completedButton = screen.getByRole('button', { name: /done/i });
     fireEvent.click(completedButton);
     expect(mockOnChange).toHaveBeenCalledTimes(1);
     expect(mockOnChange).toHaveBeenCalledWith('completed');
@@ -49,7 +49,7 @@ describe('FilterTabs', () => {
 
     const allButton = screen.getByRole('button', { name: /all/i });
     const activeButton = screen.getByRole('button', { name: /active/i });
-    const completedButton = screen.getByRole('button', { name: /completed/i });
+    const completedButton = screen.getByRole('button', { name: /done/i });
 
     expect(allButton).not.toHaveClass('active');
     expect(activeButton).not.toHaveClass('active');
