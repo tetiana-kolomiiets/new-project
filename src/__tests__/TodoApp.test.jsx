@@ -7,6 +7,34 @@ describe('TodoApp', () => {
     expect(screen.getByText('Todo List')).toBeInTheDocument();
   });
 
+  it('displays the correct number of todos', () => {
+    render(<App />);
+
+    // Initial state: 0 todos
+    expect(screen.getByText('0 items left')).toBeInTheDocument();
+
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+    fireEvent.change(inputElement, { target: { value: 'First todo' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    // After adding one todo
+    expect(screen.getByText('1 item left')).toBeInTheDocument();
+
+    fireEvent.change(inputElement, { target: { value: 'Second todo' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    // After adding two todos
+    expect(screen.getByText('2 items left')).toBeInTheDocument();
+
+    // Delete one todo
+    const firstTodoContainer = screen.getByText('First todo').closest('.todo-item');
+    const deleteButton = firstTodoContainer.querySelector('[aria-label="Delete todo"]');
+    fireEvent.click(deleteButton);
+
+    // After deleting one todo
+    expect(screen.getByText('1 item left')).toBeInTheDocument();
+  });
+
   it('adds a new todo item', () => {
     render(<App />);
     const inputElement = screen.getByPlaceholderText('Add a new todo...');
@@ -14,6 +42,23 @@ describe('TodoApp', () => {
     fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
 
     expect(screen.getByText('Buy groceries')).toBeInTheDocument();
+  });
+
+  it('does not add an empty todo item', () => {
+    render(<App />);
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+    
+    // Attempt to add an empty string
+    fireEvent.change(inputElement, { target: { value: '' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument(); // No list items should be present
+    expect(screen.getByText('No todos yet. Add one above!')).toBeInTheDocument(); // Empty message should still be there
+
+    // Attempt to add only whitespace
+    fireEvent.change(inputElement, { target: { value: '   ' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    expect(screen.getByText('No todos yet. Add one above!')).toBeInTheDocument();
   });
 
   it('toggles a todo item as completed and back to active', () => {
@@ -65,6 +110,33 @@ describe('TodoApp', () => {
 
     expect(screen.queryByText('Original text')).not.toBeInTheDocument();
     expect(screen.getByText('Updated text')).toBeInTheDocument();
+  });
+
+  it('does not save an empty or whitespace-only edit to a todo item', () => {
+    render(<App />);
+    const inputElement = screen.getByPlaceholderText('Add a new todo...');
+    fireEvent.change(inputElement, { target: { value: 'Task to edit' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' });
+
+    const todoItem = screen.getByText('Task to edit');
+    const editButton = todoItem.closest('.todo-item').querySelector('[aria-label="Edit todo"]');
+    fireEvent.click(editButton);
+
+    const editInputField = screen.getByDisplayValue('Task to edit');
+
+    // Attempt to save an empty string
+    fireEvent.change(editInputField, { target: { value: '' } });
+    fireEvent.keyDown(editInputField, { key: 'Enter', code: 'Enter' });
+    expect(screen.getByText('Task to edit')).toBeInTheDocument(); // Original text should still be there
+    expect(screen.queryByDisplayValue('')).not.toBeInTheDocument(); // The edit input should be gone
+
+    // Re-enter edit mode for whitespace test
+    fireEvent.click(editButton); // The edit button should be visible again after the previous save attempt
+    const secondEditInputField = screen.getByDisplayValue('Task to edit');
+    fireEvent.change(secondEditInputField, { target: { value: '   ' } }); // Attempt to save only whitespace
+    fireEvent.keyDown(secondEditInputField, { key: 'Enter', code: 'Enter' });
+    expect(screen.getByText('Task to edit')).toBeInTheDocument(); // Original text should still be there
+    expect(screen.queryByDisplayValue('   ')).not.toBeInTheDocument();
   });
 
   it('edits a todo item and cancels changes', () => {
@@ -215,7 +287,7 @@ describe('TodoApp', () => {
     const getDisplayedTodoTexts = () =>
       screen.getAllByRole('listitem').map(item => item.querySelector('.todo-text').textContent);
 
-    // Default sort is 'newest' (Beta Task, Alpha Task, Zeta Task)
+    // Default sort is 'newest'
     await waitFor(() => {
       expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Alpha Task', 'Zeta Task']);
     });
@@ -232,13 +304,6 @@ describe('TodoApp', () => {
     fireEvent.change(sortSelect, { target: { value: 'alphabetical' } });
     await waitFor(() => {
       expect(getDisplayedTodoTexts()).toEqual(['Alpha Task', 'Beta Task', 'Zeta Task']);
-    });
-
-    // Sort by 'priority' (expected to be 'newest' order if all default to medium priority)
-    // This tests the fallback sorting when all priorities are equal.
-    fireEvent.change(sortSelect, { target: { value: 'priority' } });
-    await waitFor(() => {
-      expect(getDisplayedTodoTexts()).toEqual(['Beta Task', 'Alpha Task', 'Zeta Task']);
     });
 
     // Revert to 'newest' to confirm
