@@ -3,7 +3,7 @@ import TodoInput from './TodoInput';
 import FilterTabs from './FilterTabs';
 import TodoList from './TodoList';
 import TodoSort from './TodoSort';
-import TodoCount from './TodoCount';
+import TodoProgress from './TodoProgress';
 import useLocalStorage from '../hooks/useLocalStorage';
 
 function App() {
@@ -108,8 +108,8 @@ function App() {
     <div className="app">
       <div className="container">
         <h1>Todo List</h1>
-        <TodoCount count={todos.length} />
         <TodoInput onAdd={addTodo} />
+        <TodoProgress todos={todos} />
         <div className="controls-row">
           <FilterTabs filter={filter} onChange={setFilter} />
           <TodoSort sortBy={sortBy} onSortChange={setSortBy} />
