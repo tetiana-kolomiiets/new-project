@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import FilterTabs from '../src/components/FilterTabs';
+import FilterTabs from '../components/FilterTabs';
 
 describe('FilterTabs', () => {
   it('renders all filter options and marks the correct one as active', () => {

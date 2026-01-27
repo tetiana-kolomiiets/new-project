@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import App from '../src/components/TodoApp';
+import App from '../components/TodoApp';
 
 describe('TodoApp', () => {
   it('renders TodoApp component', () => {
