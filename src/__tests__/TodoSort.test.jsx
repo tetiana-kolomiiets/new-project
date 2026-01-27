@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import TodoSort from '../src/components/TodoSort';
+import TodoSort from '../components/TodoSort';
 
 describe('TodoSort', () => {
   const mockOnSortChange = jest.fn();

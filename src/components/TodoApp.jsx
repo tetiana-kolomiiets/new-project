@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react';
 import TodoInput from './TodoInput';
 import FilterTabs from './FilterTabs';
 import TodoList from './TodoList';
-import TodoSort from './TodoSort';
 import TodoProgress from './TodoProgress';
+import TodoSummary from './TodoSummary';
+import ToggleAll from './ToggleAll';
 import useLocalStorage from '../hooks/useLocalStorage';
 
 function App() {
@@ -11,7 +12,6 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'active', 'completed'
-  const [sortBy, setSortBy] = useState('newest');
 
   const addTodo = (text) => {
     setTodos((prev) => [
@@ -68,32 +68,24 @@ function App() {
     }
   };
 
-  const filteredAndSortedTodos = useMemo(() => {
-    // First filter
-    let filtered = todos.filter((todo) => {
+  const toggleAllTodos = () => {
+    setTodos((prev) => {
+      if (prev.length === 0) return prev;
+      const allCompleted = prev.every((todo) => todo.completed);
+      return prev.map((todo) => ({ ...todo, completed: !allCompleted }));
+    });
+  };
+
+  const filteredTodos = useMemo(() => {
+    // Filter
+    return todos.filter((todo) => {
       // Filter by status
       if (filter === 'active' && todo.completed) return false;
       if (filter === 'completed' && !todo.completed) return false;
       
       return true;
     });
-
-    // Then sort
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return (b.createdAt || b.id) - (a.createdAt || a.id);
-        case 'oldest':
-          return (a.createdAt || a.id) - (b.createdAt || b.id);
-        case 'alphabetical':
-          return a.text.localeCompare(b.text);
-        default:
-          return 0;
-      }
-    });
-
-    return sorted;
-  }, [todos, filter, sortBy]);
+  }, [todos, filter]);
 
   const emptyMessage =
     todos.length === 0
@@ -110,12 +102,13 @@ function App() {
         <h1>Todo List</h1>
         <TodoInput onAdd={addTodo} />
         <TodoProgress todos={todos} />
+        <TodoSummary todos={todos} />
         <div className="controls-row">
+          <ToggleAll todos={todos} onToggleAll={toggleAllTodos} />
           <FilterTabs filter={filter} onChange={setFilter} />
-          <TodoSort sortBy={sortBy} onSortChange={setSortBy} />
         </div>
         <TodoList
-          todos={filteredAndSortedTodos}
+          todos={filteredTodos}
           emptyMessage={emptyMessage}
           editingId={editingId}
           editText={editText}
